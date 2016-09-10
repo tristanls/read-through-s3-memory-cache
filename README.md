@@ -70,7 +70,7 @@ cache2.get("myKey", (error, value) =>
 
   * `["AccessDenied", "NoSuchKey"]`
 
-Default S3 error codes to treat as "not found" (`AccessDenied` can occur of the object does not exist but the caller has no `s3:ListBucket` permission).
+Default S3 error codes to treat as "not found" (`AccessDenied` can occur if the object does not exist but the caller has no `s3:ListBucket` permission).
 
 #### new Cache(config)
 
@@ -80,7 +80,7 @@ Default S3 error codes to treat as "not found" (`AccessDenied` can occur of the 
 
 Creates a new Cache.
 
-#### Cache.get(key, callback)
+#### cache.get(key, callback)
 
   * `key`: _String_ S3 Key to retrieve from cache.
   * `callback`: _Function_ `function(error, value){}`
