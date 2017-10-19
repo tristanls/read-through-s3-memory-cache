@@ -64,7 +64,7 @@ cache2.get("myKey", (error, value) =>
 **Public API**
   * [Cache.S3_NOT_FOUND_CODES](#caches3_not_found_codes)
   * [new Cache(config)](#new-cacheconfig)
-  * [cache.get(key, callback)](#cachegetkey-callback)
+  * [cache.get(key, \[context\], callback)](#cachegetkey-context-callback)
 
 #### Cache.S3_NOT_FOUND_CODES
 
@@ -77,12 +77,15 @@ Default S3 error codes to treat as "not found" (`AccessDenied` can occur if the 
   * `config`: _Object_ Cache configuration.
     * `bucket`: _String_ Name of S3 bucket to retrieve values from.
     * `initialCache`: _Map_ _(Default: undefined)_ Initial cached values to use.
+    * `stdoutTelemetry`: _Boolean_ _(Default: false)_ If `true`, telemetry will be emitted to `stdout`.
 
 Creates a new Cache.
 
-#### cache.get(key, callback)
+#### cache.get(key, [context], callback)
 
   * `key`: _String_ S3 Key to retrieve from cache.
+  * `context`: _Object_ Optional context.
+    * `parentSpan`: _TraceTelemetryEvents.Span_ Parent span to use to trace execution.
   * `callback`: _Function_ `function(error, value){}`
     * `error`: _Error_ Error, if any.
     * `value`: _Buffer_ S3 Object, if it exists, `undefined` otherwise.

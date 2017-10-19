@@ -9,6 +9,7 @@ const markTime = require("mark-time");
 const pkg = require("./package.json");
 const QuantifyTelemetryEvents = require("telemetry-events-quantify");
 const TelemetryEvents = require("telemetry-events");
+const TraceTelemetryEvents = require("telemetry-events-trace");
 const util = require("util");
 
 const Cache = module.exports = function(config)
@@ -60,13 +61,21 @@ const Cache = module.exports = function(config)
     {
         telemetry: self._telemetry
     });
+    self._tracing = new TraceTelemetryEvents(
+        {
+            telemetry: self._telemetry
+        }
+    );
 
-    // debugging
-    // self.on("telemetry", event =>
-    // {
-    //     // clone handles circular dependencies
-    //     console.log(JSON.stringify(clone(event)));
-    // });
+    if (self._stdoutTelemetry)
+    {
+        self.on("telemetry", event =>
+            {
+                // clone handles circular dependencies
+                console.log(JSON.stringify(clone(event)));
+            }
+        );
+    }
 };
 
 util.inherits(Cache, events.EventEmitter);
@@ -76,7 +85,8 @@ Cache.SCHEMA =
     config: Joi.object().keys(
         {
             bucket: Joi.string().required(),
-            initialCache: Joi.object().type(Map)
+            initialCache: Joi.object().type(Map),
+            stdoutTelemetry: Joi.bool()
         }
     )
 };
@@ -86,9 +96,14 @@ Cache.S3_NOT_FOUND_CODES =
 ];
 
 
-Cache.prototype.get = function(key, callback)
+Cache.prototype.get = function(key, context, callback)
 {
     const self = this;
+    if (context && context instanceof Function)
+    {
+        callback = context;
+        context = {};
+    }
     if (self._cache.has(key))
     {
         return callback(undefined, self._cache.get(key));
@@ -112,6 +127,11 @@ Cache.prototype.get = function(key, callback)
             args: [params]
         }
     });
+    let traceSpan;
+    if (context.parentSpan)
+    {
+        traceSpan = context.parentSpan.childSpan("AWS.S3.getObject");
+    }
     const startTime = markTime();
     self._s3.getObject(params, (error, data) =>
     {
@@ -138,7 +158,16 @@ Cache.prototype.get = function(key, callback)
                 error,
                 stack: error.stack
             });
+            if (traceSpan)
+            {
+                traceSpan.tag("error", true);
+                traceSpan.finish();
+            }
             return callback(error);
+        }
+        if (traceSpan)
+        {
+            traceSpan.finish();
         }
         self._cache.set(key, data.Body);
         return callback(undefined, data.Body);
