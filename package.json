@@ -15,7 +15,7 @@
     "module-telemetry-policy": "1.2.3"
   },
   "dependencies": {
-    "aws-sdk": "2.149.0",
+    "aws-sdk": "2.150.0",
     "clone": "2.1.1",
     "joi": "13.0.2",
     "mark-time": "1.0.0",
