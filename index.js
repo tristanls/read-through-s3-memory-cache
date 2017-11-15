@@ -147,6 +147,15 @@ Cache.prototype.get = function(key, context, callback)
             const notFound = Cache.S3_NOT_FOUND_CODES.indexOf(error.code) >= 0;
             if (notFound)
             {
+                self._log("info", "not found", _targetMetadata,
+                    {
+                        target:
+                        {
+                            args: [params]
+                        },
+                        error
+                    }
+                );
                 self._cache.set(key, undefined);
                 return callback();
             }
