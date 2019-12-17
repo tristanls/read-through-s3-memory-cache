@@ -23,8 +23,8 @@ const Cache = module.exports = function(config)
     self.name = pkg.name;
     self.version = pkg.version;
 
-    const configValidationResult = Joi.validate(
-        config, Cache.SCHEMA.config,
+    const configValidationResult = Cache.SCHEMA.config.validate(
+        config,
         {
             abortEarly: false,
             convert: false
@@ -85,7 +85,7 @@ Cache.SCHEMA =
     config: Joi.object().keys(
         {
             bucket: Joi.string().required(),
-            initialCache: Joi.object().type(Map),
+            initialCache: Joi.object().instance(Map),
             stdoutTelemetry: Joi.bool()
         }
     )
